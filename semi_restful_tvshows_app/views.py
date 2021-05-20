@@ -1,5 +1,8 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from .models import Show
+
+
 def index(request):
     context = {
         'shows': Show.objects.all()
@@ -11,6 +14,11 @@ def new(request):
 
 def create(request):
     #Create the show
+    errors = Show.objects.basic_validator(request.POST)
+    if len(errors) > 0:
+        for key, value in errors.items():
+            messages.error(request, value)
+        return redirect('/semi_restful_tvshows_app/new')    
     Show.objects.create(
         title = request.POST['title'], 
         network = request.POST['network'],
@@ -27,6 +35,11 @@ def edit(request, show_id):
     return render(request, 'edit.html', context)
 
 def update(request, show_id):
+    errors = Show.objects.basic_validator(request.POST)
+    if len(errors) > 0:
+        for key, value in errors.items():
+            messages.error(request, value)
+        return redirect(f'/semi_restful_tvshows_app/{show_id}/edit') 
     #update show!
     to_update = Show.objects.get(id=show_id)
     #update each field
